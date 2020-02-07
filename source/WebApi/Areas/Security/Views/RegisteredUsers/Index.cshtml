@@ -1,0 +1,11 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Security Administration</h2>
+<ul>
+    <li>@Html.ActionLink("Users", "CreateUser", "RegisteredUsers", new { area = "Security" }, null)</li>
+    <li>@Html.ActionLink("Applications", "CreateApplication", "RegisteredApplications", new { area = "Security" }, null)</li>
+</ul>

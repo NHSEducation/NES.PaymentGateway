@@ -1,0 +1,169 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Help</h2>
+
+<h3>Request Token</h3>
+Returned token is only valid for 60 seconds.  Subsequent requests should be made within this window.
+<div style="color: darkgray; font-family: courier">
+    <pre>
+
+        var gatewayUrlBase = "https://paymentgateway.scot.nhs.uk/api/values/";
+        var client = new WebClient();
+
+        var url = gatewayUrlBase + "RequestToken?name=" + applicationName; // Registered with Payment Gateway app.
+
+        var token = client.DownloadString(url);
+
+        ViewBag.Token = token;
+
+        return View();
+
+    </pre>
+
+</div>
+<br />
+<ul>
+    <li>@Html.ActionLink("Request Token SUCCESS - returns encrypted token", "RequestToken", "Test", new { name = "Portal" }, null)</li>
+    <li>@Html.ActionLink("Request Token FAIL - returns ((403) Forbidden)", "RequestToken", "Test", new { name = "Fred" }, null)</li>
+</ul>
+<hr />
+<br />
+<h3>Request VendorTxCode</h3>
+Requires:: Valid token.
+<div style="color: darkgray; font-family: courier">
+    <pre>
+        var client = new WebClient();
+
+        var url = GatewayUrlBase + "RequestVendorTxCode?id=1";
+
+        var vendorTxCode = client.DownloadString(url);
+
+        ViewBag.VendorTxCode = vendorTxCode;
+        return View();
+    </pre>
+
+</div>
+<br />
+<ul>
+    <li>@Html.ActionLink("Request VendorTxCode SUCCESS", "RequestVendorTxCode", "Test", new { wait = false }, null)</li>
+    <li>@Html.ActionLink("Request VendorTxCode TIMEOUT", "RequestVendorTxCode", "Test", new { wait = true }, null)</li>
+</ul>
+<hr />
+<br />
+<h3>Send Payment Request</h3>
+Requires:: Valid token & VendorTxCode
+<br />
+<b>Payment Info Class Structure</b>
+Populate paymentInfo object and attach to Request HEADER
+<div style="color: darkgray; font-family: courier">
+    <pre>
+        public class PaymentInfo
+        {
+            public string VendorTxCode { get; set; }
+            public string TotalBookingFee { get; set; }
+            public string AccountCode { get; set; }
+            public int BookingId { get; set; }
+            public string CostCentre { get; set; }
+            public string ProjectCode { get; set; }
+            public string NotificationUrl { get; set; }
+            public AddressDetails BillingDetails { get; set; }
+            public AddressDetails DeliveryDetails { get; set; }
+            public string CustomerEmail { get; set; }
+            public string Basket { get; set; }
+            public bool IsMobile { get; set; }
+        }
+    </pre>
+</div>
+<b>Send Payment Request</b>
+<div style="color: darkgray; font-family: courier">
+    <pre>
+            const string appName = "Portal"; // must be registered in Payment Gateway
+
+            var client = new WebClient();
+
+            // 1. Request Token
+            // =================
+            var url = GatewayUrlBase + "RequestToken?name=" + appName;
+            var token = client.DownloadString(url);
+
+
+            // 2. Request VendorTxCode
+            // ========================
+            url = GatewayUrlBase + "RequestVendorTxCode?id=1";
+            // add token to next request HEADER
+            client.Headers.Add("X-AuthToken", token);
+            var vendorTxCode = client.DownloadString(url);
+
+
+            // 3. Create PaymentInfo object
+            // =============================
+            var addressDetails = new AddressDetails
+            {
+                Surname = "Bloggs",
+                Firstnames = "Joe",
+                Address1 = "The Brambles",
+                Address2 = "Little Hedgely",
+                City = "Burblington",
+                PostCode = "NK12",
+                Country = "GB",
+                State = "",
+                Phone = "0778514678"
+            };
+
+            var paymentInfo = new PaymentInfo
+            {
+                VendorTxCode = vendorTxCode,    
+                TotalBookingFee = "200.00",
+                NotificationUrl = ConfigurationHelper.NotificationUrl,
+                BillingDetails = addressDetails,
+                DeliveryDetails = addressDetails,
+                CustomerEmail = "joe.bloggs@gmail.com",
+                Basket = "1%3aCPD+Connect++Mindfulness-Based+Stress+Reduction+(MBSR)+-+9+week+course%3a%3a%3a%3a%3a200.00",
+                IsMobile = false
+            };
+
+
+            // add paymentInfo to HEADER
+            var jsonObj = JsonConvert.SerializeObject(paymentInfo);
+            client.Headers.Add("X-PaymentInfo", jsonObj);
+
+            url = GatewayUrlBase + "SendPaymentRequest?id=1";
+
+            var json = client.DownloadString(url);
+            var response = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+    </pre>
+</div>
+<br />
+<ul>
+    <li>@Html.ActionLink("Send Payment Request", "SendPaymentRequest", "Test", null, null)</li>
+</ul>
+<hr />
+<br />
+<h3>Record Payment Transaction Log</h3>
+<div style="color: darkgray; font-family: courier">
+    <pre>
+            client.Headers.Add("X-AuthToken", token);
+            //var vendorTxCode = client.DownloadString(url);
+            var vendorTxCode = GenerateVendorTxCode();
+
+            // the Payment Transaction Log object will be populated from the response object from SendPaymentRequest()
+            var paymentTransactionLog = new PaymentTransactionLog();
+
+            // add paymentTransactionLog to HEADER
+            var jsonObj = JsonConvert.SerializeObject(paymentTransactionLog);
+            client.Headers.Add("X-PaymentTransactionLog", jsonObj);
+
+            url = GatewayUrlBase + "RecordPaymentTransaction?isMobile=false";
+            var json = client.DownloadString(url);
+    </pre>
+</div>
+<br />
+<ul>
+    <li>@Html.ActionLink("Record Payment Transaction Log", "RecordPaymentTransactionLog", "Test", null, null)</li>
+</ul>
+
+

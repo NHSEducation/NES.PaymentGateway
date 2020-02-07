@@ -1,0 +1,137 @@
+﻿@model PaymentGateway.Areas.Security.Models.UserModel
+
+@{
+    ViewBag.Title = "CreateUser";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var grid = new WebGrid(source: Model.RegisteredUsers, canPage: true, canSort: false);
+}
+<style type="text/css">
+    .webGrid {
+        border: 1px solid lightgray;
+        border-collapse: collapse;
+    }
+    .header {
+        padding-left: 10px;
+        padding-right: 10px;
+        border-right: 1px solid lightgray
+    }
+    .col {
+        padding-left: 10px;
+        padding-right: 10px;
+        border-top: 1px solid lightgray;
+        border-right: 1px solid lightgray
+    }
+    .webGrid th {
+        background-color: #F7F7F7;
+        font-weight: bold;
+    }
+
+    .webGrid th, .webGrid td {
+        padding: 5px;
+        /*width: 110px;*/
+        border: 1px solid #ccc;
+    }
+
+    .webGrid, .webGrid table td {
+        border: 0px solid #ccc;
+    }
+
+    .webGrid th a, .webGrid th a:visited {
+        color: #333;
+    }
+</style>
+
+<h2>Users</h2>
+
+@using (Html.BeginForm()) 
+{
+    @Html.AntiForgeryToken()
+    
+
+    <div class="form-horizontal">
+    <h4>Registered Users</h4>
+        <div>
+            @grid.GetHtml(
+                htmlAttributes: new { @id = "WebGrid" },
+                tableStyle: "webGrid",
+                headerStyle: "header",
+                alternatingRowStyle: "alt",
+                selectedRowStyle: "select",
+                columns: grid.Columns(
+                    grid.Column("Id", "Id", null, "col"),
+                    grid.Column("UserName", "UserName", null, "col"),
+                    grid.Column("Created", "Created", null, "col"),
+                    grid.Column("", style: "button",
+                        format:
+                            @<a class="delete-case" id="@item.Id" href="javascript:;">Delete</a>
+                            )
+                    )
+                )
+        </div>
+
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+        <script type="text/javascript" src="https://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
+        <script type="text/javascript">
+
+            $('.delete-case').on('click', function(e) {
+                e.preventDefault();
+                var tr = $(this).parents('tr:first');
+                id = $(this).prop('id'); 
+                $.ajax({
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    url: "/Security/RegisteredUsers/DeleteUser?userId=" + id,
+                    success: function (results) {
+                        window.location.href = "/Security/RegisteredUsers/CreateUser";
+                    }
+
+                });
+            });
+        </script>
+
+        
+        <hr />
+        <h4>Add New User</h4>
+        @Html.ValidationSummary(true, "", new {@class = "text-danger"})
+        @if (TempData["UserMessage"] != null)
+        {
+            <div class="alert alert-success">
+                <strong>Message!</strong> @TempData["UserMessage"].
+            </div>
+        }
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.RegisteredUser.Username, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.RegisteredUser.Username, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.RegisteredUser.Username, "", new {@class = "text-danger"})
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.RegisteredUser.Password, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.RegisteredUser.Password, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.RegisteredUser.Password, "", new {@class = "text-danger"})
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.RegisteredUser.Created, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.RegisteredUser.Created, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.RegisteredUser.Created, "", new {@class = "text-danger"})
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default"/>
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>

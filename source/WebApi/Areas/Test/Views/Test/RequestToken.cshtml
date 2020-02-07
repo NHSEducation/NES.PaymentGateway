@@ -1,0 +1,12 @@
+﻿
+@{
+    ViewBag.Title = "RequestToken";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>RequestToken</h2>
+<p>Example format -  <span style="background-color: lightgrey">Portal:25/03/2019 11:24:35</span></p>
+<br/>
+<p>Encrypted token - <span style="background-color: azure; font-size: larger; color: red">@ViewBag.Token</span> returned to calling application.</p>
+<br/>
+<p>Now embed this in the header of the associated payment request to PaymentGateway/SendPaymentRequest()</p>
