@@ -448,7 +448,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>51189</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://local.paymentgateway.scot.nhs.uk</IISUrl>
+          <IISUrl>http://vs.paymentgateway.scot.nhs.uk</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
