@@ -1,0 +1,6 @@
+bin
+obj
+.vs
+/source/WebApi/WebApi.csproj.user
+/source/PaymentGatewayDb/PaymentGatewayDb.sqlproj.user
+/source/WebApi/Logs
