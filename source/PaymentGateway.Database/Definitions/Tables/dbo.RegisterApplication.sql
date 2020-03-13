@@ -1,0 +1,14 @@
+SET ANSI_NULLS ON
+SET QUOTED_IDENTIFIER ON
+CREATE TABLE [dbo].[RegisterApplication](
+	[ApplicationID] [int] IDENTITY(1,1) NOT NULL,
+	[Description] [varchar](max) COLLATE Latin1_General_CI_AS NULL,
+	[Name] [varchar](200) COLLATE Latin1_General_CI_AS NULL,
+	[Created] [datetime] NULL,
+	[IsActive] [bit] NULL,
+ CONSTRAINT [PK_RegisterApplication] PRIMARY KEY CLUSTERED 
+(
+	[ApplicationID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 80) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
