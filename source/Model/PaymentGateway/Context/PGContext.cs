@@ -12,13 +12,13 @@ namespace PaymentGateway.Model.PaymentGateway.Context
         public DbSet<PaymentOrder> PaymentOrders { get; set; }
         public DbSet<PaymentTransactionLog> PaymentTransactionLogs { get; set; }
         public DbSet<RegisteredUser> RegisterUsers { get; set; }
-        public DbSet<RegisteredApplication> RegisterApplications { get; set; }   
+        public DbSet<RegisteredApplication> RegisterApplications { get; set; }
 
         #endregion
 
         #region constructors
 
-        public PGContext() : base("name=PaymentGateway")
+        public PGContext() : base("name=PaymentGatewayDb")
         {
         }
 

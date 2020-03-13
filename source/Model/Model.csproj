@@ -126,6 +126,9 @@
     <Compile Include="IDbContext.cs" />
     <Compile Include="IEntity.cs" />
     <Compile Include="PaymentGateway\Common\AddressDetails.cs" />
+    <Compile Include="PaymentGateway\Common\Basket.cs" />
+    <Compile Include="PaymentGateway\Common\BasketItem.cs" />
+    <Compile Include="PaymentGateway\Common\Discount.cs" />
     <Compile Include="PaymentGateway\Common\PaymentInfo.cs" />
     <Compile Include="PaymentGateway\Context\PaymentTransactionLog.cs" />
     <Compile Include="PaymentGateway\Context\PGContext.cs" />
