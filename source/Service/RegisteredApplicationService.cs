@@ -16,7 +16,7 @@ namespace Service
 
         #region constructors
 
-        public RegisteredApplicationService([Named("PaymentGateway")] IDbContext dbContext)
+        public RegisteredApplicationService([Named("PaymentGatewayDb")] IDbContext dbContext)
         {
             _dbContext = dbContext;
             _registeredApplications = _dbContext.Set<RegisteredApplication>();

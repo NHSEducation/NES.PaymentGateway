@@ -7,7 +7,7 @@ namespace Service
     {
         #region constructors
 
-        public GatewayService([Named("PaymentGateway")]IDbContext context)
+        public GatewayService([Named("PaymentGatewayDb")]IDbContext context)
         {
             Context = context;
             Entities = context.Set<T>();

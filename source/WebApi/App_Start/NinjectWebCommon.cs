@@ -42,8 +42,8 @@ namespace PaymentGateway
                      .BindDefaultInterface());
 
 
-            kernel.Bind(typeof(IService<>)).To(typeof(GatewayService<>)).Named("PaymentGateway");
-            kernel.Bind<IDbContext>().ToConstructor(ctx => new PGContext()).Named("PaymentGateway");
+            kernel.Bind(typeof(IService<>)).To(typeof(GatewayService<>)).Named("PaymentGatewayDb");
+            kernel.Bind<IDbContext>().ToConstructor(ctx => new PGContext()).Named("PaymentGatewayDb");
 
 
             GlobalConfiguration.Configuration.DependencyResolver = new NinjectResolver(kernel);

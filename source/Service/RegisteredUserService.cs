@@ -15,7 +15,7 @@ namespace Service
 
         #region constructors
 
-        public RegisteredUserService([Named("PaymentGateway")] IDbContext dbContext)
+        public RegisteredUserService([Named("PaymentGatewayDb")] IDbContext dbContext)
         {
             _dbContext = dbContext;
             _registerUsers = _dbContext.Set<RegisteredUser>();
@@ -80,7 +80,7 @@ namespace Service
 
             return userCount > 0;
         }
-        
+
         #endregion
     }
 }

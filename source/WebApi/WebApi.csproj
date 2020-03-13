@@ -302,6 +302,7 @@
     <Compile Include="Util\Helpers\ConfigurationHelper.cs" />
     <Compile Include="Util\Ninject\NinjectResolver.cs" />
     <Compile Include="Util\Ninject\NinjectScope.cs" />
+    <Compile Include="Util\Ninject\ServicesModule.cs" />
     <Compile Include="Util\Sage\SageConfig.cs" />
     <Compile Include="Util\Services\LoggingService.cs" />
     <Compile Include="Util\Session\ISessionManager.cs" />
