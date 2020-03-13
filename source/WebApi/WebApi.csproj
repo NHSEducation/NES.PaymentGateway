@@ -354,6 +354,7 @@
     <Content Include="Areas\Test\Views\Test\NotificationUrl.cshtml" />
     <Content Include="Areas\Test\Views\Test\RecordPaymentTransactionLog.cshtml" />
     <Content Include="Areas\Test\Views\web.config" />
+    <Content Include="Areas\Test\Views\_ViewStart.cshtml" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
     <None Include="Properties\PublishProfiles\vm-portal-dev01 - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />

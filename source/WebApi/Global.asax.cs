@@ -42,7 +42,7 @@ namespace PaymentGateway
             AreaRegistration.RegisterAllAreas();
 
             WebApiConfig.Register(GlobalConfiguration.Configuration);
-            
+
             // mvc global filters
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             // http global filters
@@ -82,7 +82,7 @@ namespace PaymentGateway
             InitialiseLogger(false);
             _logger.Error(ex.ToString());
         }
-        
+
         #endregion
 
         #region session
@@ -92,8 +92,8 @@ namespace PaymentGateway
             InitialiseLogger(false);
             _logger.InfoFormat("Session <{0}> start on IP address <{1}>.", this.Session.SessionID, this.Request.UserHostAddress);
 
-            var user = HttpContext.Current.User.Identity.GetLogin();
-            SetLogContext(this.Session.SessionID, user);
+            //var user = HttpContext.Current.User.Identity.GetLogin();
+            //SetLogContext(this.Session.SessionID, user);
         }
 
         protected void Session_End(Object sender, EventArgs e)
@@ -157,13 +157,13 @@ namespace PaymentGateway
 
         private static void InitialiseDatabaseContext()
         {
-            // PaymentGateway database            
+            // PaymentGateway database
             Database.SetInitializer<PGContext>(null);
 
         }
 
         #endregion
 
-  
+
     }
 }

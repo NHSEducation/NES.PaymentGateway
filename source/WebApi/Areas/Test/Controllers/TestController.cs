@@ -9,12 +9,13 @@ using Newtonsoft.Json;
 using PaymentGateway.Model.PaymentGateway.Common;
 using PaymentGateway.Model.PaymentGateway.Context;
 using PaymentGateway.Util.ActionFilters;
+using PaymentGateway.Util.Controllers;
 using PaymentGateway.Util.Helpers;
 
 namespace PaymentGateway.Areas.Test.Controllers
 {
     [CustomAuthorizationFilter]
-    public class TestController : Controller
+    public class TestController : AbstractController
     {
         public string RootUrl => ConfigurationHelper.GetRootUrl(HttpContext.Request);
         public string GatewayUrlBase => RootUrl + "/api/values/";
@@ -107,7 +108,7 @@ namespace PaymentGateway.Areas.Test.Controllers
 
             var paymentInfo = new PaymentInfo
             {
-                VendorTxCode = vendorTxCode,    
+                VendorTxCode = vendorTxCode,
                 TotalBookingFee = "200.00",
                 AccountCode = "0948",
                 CostCentre = "E30000",
@@ -196,7 +197,7 @@ namespace PaymentGateway.Areas.Test.Controllers
         #region GenerateVendorTXCode
 
         /// Generate Application side unique id for refund transaction
-        /// and send it to SAGEPAY for refund processing.        
+        /// and send it to SAGEPAY for refund processing.
         /// <returns>string</returns>
         private static string GenerateVendorTxCode()
         {

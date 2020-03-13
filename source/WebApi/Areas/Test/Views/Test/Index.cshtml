@@ -1,7 +1,7 @@
 ﻿
 @{
     ViewBag.Title = "Index";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    //Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <h2>Help</h2>
@@ -116,7 +116,7 @@ Populate paymentInfo object and attach to Request HEADER
 
             var paymentInfo = new PaymentInfo
             {
-                VendorTxCode = vendorTxCode,    
+                VendorTxCode = vendorTxCode,
                 TotalBookingFee = "200.00",
                 NotificationUrl = ConfigurationHelper.NotificationUrl,
                 BillingDetails = addressDetails,
@@ -165,5 +165,3 @@ Populate paymentInfo object and attach to Request HEADER
 <ul>
     <li>@Html.ActionLink("Record Payment Transaction Log", "RecordPaymentTransactionLog", "Test", null, null)</li>
 </ul>
-
-
