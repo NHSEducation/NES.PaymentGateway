@@ -343,7 +343,6 @@
     <Content Include="Areas\HelpPage\Views\_ViewStart.cshtml" />
     <Content Include="Areas\Security\Views\web.config" />
     <Content Include="Areas\Security\Views\_ViewStart.cshtml" />
-    <Content Include="Areas\Security\Views\Shared\_Layout.cshtml" />
     <Content Include="Areas\Security\Views\RegisteredUsers\CreateUser.cshtml" />
     <Content Include="Areas\Security\Views\RegisteredUsers\Index.cshtml" />
     <Content Include="Areas\Security\Views\RegisteredApplications\CreateApplication.cshtml" />
@@ -382,6 +381,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Areas\Security\Views\Shared\" />
     <Folder Include="Areas\Security\Views\TestApi\" />
     <Folder Include="Areas\Test\Models\" />
     <Folder Include="Areas\Test\Views\Shared\" />

@@ -11,6 +11,7 @@ namespace PaymentGateway.Util.Helpers
 
         public static string NotificationUrl => GetValue("NotificationUrl");
         public static string SageEnvironment => GetValue("SageEnvironment");
+        public static string PackageVersion => GetValue("Package.Version");
 
         #endregion
 

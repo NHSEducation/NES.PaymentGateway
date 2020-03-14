@@ -1,7 +1,9 @@
-﻿using System.Web.Mvc;
+using System.Linq;
+using System.Web.Mvc;
 using PaymentGateway.Model.PaymentGateway.Context;
 using PaymentGateway.Util.ActionFilters;
 using PaymentGateway.Util.Controllers;
+using PaymentGateway.Util.Helpers;
 using Service;
 
 
@@ -33,6 +35,7 @@ namespace PaymentGateway.Controllers
         public ActionResult Index()
         {
             ViewBag.Title = "Home Page";
+            ViewBag.PackageVersion = ConfigurationHelper.PackageVersion;
 
             return View();
         }
@@ -40,12 +43,16 @@ namespace PaymentGateway.Controllers
         [HttpGet]
         public ActionResult Login()
         {
+            ViewBag.PackageVersion = ConfigurationHelper.PackageVersion;
+
             return View();
         }
 
         [HttpPost]
         public ActionResult Login(RegisteredUser user)
         {
+            var errors = ModelState.Values.SelectMany(v => v.Errors);
+
             if (ModelState.IsValid)
             {
                 // check that the user is registered
@@ -55,8 +62,10 @@ namespace PaymentGateway.Controllers
                 {
                     Session["loggedOn"] = user.Username;
                     return RedirectToAction("Index");
-                }                
+                }
             }
+
+            ViewBag.PackageVersion = ConfigurationHelper.PackageVersion;
 
             return View(user);
         }

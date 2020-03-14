@@ -23,6 +23,7 @@ namespace PaymentGateway.Areas.Test.Controllers
         // GET: Security/TestApi
         public ActionResult Index()
         {
+            ViewBag.PackageVersion = ConfigurationHelper.PackageVersion;
             return View();
         }
 
@@ -50,6 +51,7 @@ namespace PaymentGateway.Areas.Test.Controllers
             var vendorTxCode = client.DownloadString(url);
 
             ViewBag.VendorTxCode = vendorTxCode;
+            ViewBag.PackageVersion = ConfigurationHelper.PackageVersion;
 
             return View();
         }
@@ -63,6 +65,7 @@ namespace PaymentGateway.Areas.Test.Controllers
             var token = client.DownloadString(url);
 
             ViewBag.Token = token;
+            ViewBag.PackageVersion = ConfigurationHelper.PackageVersion;
 
             return View();
         }
@@ -136,6 +139,7 @@ namespace PaymentGateway.Areas.Test.Controllers
             if (response.ContainsKey("NextURL")) { nextUrl = response["NextURL"].ToString(); }
 
             ViewBag.NextUrl = nextUrl;
+            ViewBag.PackageVersion = ConfigurationHelper.PackageVersion;
             //ViewBag.NextUrl = ConfigurationHelper.GetRootUrl(HttpContext.Request) + ConfigurationHelper.NotificationUrl;
             return View(response);
         }
@@ -191,6 +195,8 @@ namespace PaymentGateway.Areas.Test.Controllers
             var json = client.DownloadString(url);
             var response = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
 
+            ViewBag.PackageVersion = ConfigurationHelper.PackageVersion;
+            
             return View();
         }
 

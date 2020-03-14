@@ -5,6 +5,7 @@ using PaymentGateway.Areas.Security.Models;
 using PaymentGateway.Model.PaymentGateway.Context;
 using PaymentGateway.Util.ActionFilters;
 using PaymentGateway.Util.Controllers;
+using PaymentGateway.Util.Helpers;
 using Service;
 
 namespace PaymentGateway.Areas.Security.Controllers
@@ -33,6 +34,7 @@ namespace PaymentGateway.Areas.Security.Controllers
 
         public ActionResult Index()
         {
+            ViewBag.PackageVersion = ConfigurationHelper.PackageVersion;
             return View();
         }
 
@@ -41,6 +43,8 @@ namespace PaymentGateway.Areas.Security.Controllers
         {
             var registeredUsers = _registerUserService.GetAll();
             var model = new UserModel() {RegisteredUser = new RegisteredUser() { Created = DateTime.Now } , RegisteredUsers = registeredUsers};
+
+            ViewBag.PackageVersion = ConfigurationHelper.PackageVersion;
 
             return View(model);
         }
@@ -58,7 +62,7 @@ namespace PaymentGateway.Areas.Security.Controllers
 
                 var registeredUser = userModel.RegisteredUser;
 
-                // Validating Username 
+                // Validating Username
                 if (_registerUserService.ValidateUsername(registeredUser))
                 {
                     ModelState.AddModelError("", "User is Already Registered");
@@ -78,6 +82,8 @@ namespace PaymentGateway.Areas.Security.Controllers
 
                 var registeredUsers = _registerUserService.GetAll();
                 var model = new UserModel() { RegisteredUser = new RegisteredUser() { Created = DateTime.Now }, RegisteredUsers = registeredUsers };
+
+                ViewBag.PackageVersion = ConfigurationHelper.PackageVersion;
 
                 return View("CreateUser", model);
             }

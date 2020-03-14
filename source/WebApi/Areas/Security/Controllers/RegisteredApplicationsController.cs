@@ -4,6 +4,7 @@ using PaymentGateway.Areas.Security.Models;
 using PaymentGateway.Model.PaymentGateway.Context;
 using PaymentGateway.Util.ActionFilters;
 using PaymentGateway.Util.Controllers;
+using PaymentGateway.Util.Helpers;
 using Service;
 
 namespace PaymentGateway.Areas.Security.Controllers
@@ -40,6 +41,7 @@ namespace PaymentGateway.Areas.Security.Controllers
             applicationsModel.RegisteredApplications = registeredApplications;
             applicationsModel.RegisteredApplication = new RegisteredApplication{Created = DateTime.Now};
 
+            ViewBag.PackageVersion = ConfigurationHelper.PackageVersion;
 
             return View(applicationsModel);
         }
@@ -51,13 +53,13 @@ namespace PaymentGateway.Areas.Security.Controllers
             try
             {
                 var registeredApplication = applicationsModel.RegisteredApplication;
-                
+
                 if (!ModelState.IsValid)
                 {
                     return View("CreateApplication", applicationsModel);
                 }
 
-                // Validating Username 
+                // Validating Username
                 if (_registerApplicationService.ValidateApplication(registeredApplication))
                 {
                     ModelState.AddModelError("", "Application is Already Registered");
@@ -75,6 +77,8 @@ namespace PaymentGateway.Areas.Security.Controllers
 
                 TempData["ApplicationMessage"] = "Application Registered Successfully";
                 ModelState.Clear();
+
+                ViewBag.PackageVersion = ConfigurationHelper.PackageVersion;
 
                 return View("CreateApplication", applicationsModel);
             }
