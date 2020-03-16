@@ -1,14 +1,13 @@
-﻿using System.Web.Mvc;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PaymentGateway;
+using System.Web.Mvc;
 using PaymentGateway.Controllers;
+using Xunit;
 
 namespace PaymentGateway.Tests.Controllers
 {
-    [TestClass]
+
     public class HomeControllerTest
     {
-        [TestMethod]
+        [Fact]
         public void Index()
         {
             // Arrange
@@ -18,8 +17,8 @@ namespace PaymentGateway.Tests.Controllers
             ViewResult result = controller.Index() as ViewResult;
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual("Home Page", result.ViewBag.Title);
+            Assert.NotNull(result);
+            Assert.Equal("Home Page", result.ViewBag.Title);
         }
     }
 }

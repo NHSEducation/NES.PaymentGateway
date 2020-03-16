@@ -281,6 +281,7 @@
     <Compile Include="Areas\Security\Models\UserModel.cs" />
     <Compile Include="Areas\Security\SecurityAreaRegistration.cs" />
     <Compile Include="Areas\Test\TestAreaRegistration.cs" />
+    <Compile Include="ControllerHelper\PaymentHelper.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">
@@ -385,7 +386,6 @@
     <Folder Include="Areas\Security\Views\TestApi\" />
     <Folder Include="Areas\Test\Models\" />
     <Folder Include="Areas\Test\Views\Shared\" />
-    <Folder Include="ControllerHelper\" />
     <Folder Include="Util\Attributes\Authorisation\" />
     <Folder Include="Views\TestApi\" />
   </ItemGroup>

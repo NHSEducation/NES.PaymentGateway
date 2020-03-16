@@ -6,6 +6,7 @@ using System.Linq;
 using System.Web.Http;
 using Common.Helpers;
 using Newtonsoft.Json;
+using PaymentGateway.ControllerHelper;
 using PaymentGateway.Model;
 using PaymentGateway.Model.PaymentGateway.Common;
 using PaymentGateway.Model.PaymentGateway.Context;
@@ -25,6 +26,7 @@ namespace PaymentGateway.Controllers
         private readonly IDbContext _dbContext;
         private readonly IService<PaymentOrder> _paymentOrderService;
         private readonly IService<PaymentTransactionLog> _paymentTransactionLogService;
+        private readonly ISageService _sageService;
 
         #endregion
 
@@ -34,16 +36,17 @@ namespace PaymentGateway.Controllers
         {
         }
 
-        public ValuesController(IService<PaymentOrder> paymentOrderService, IService<PaymentTransactionLog> paymentTransactionLogService, IDbContext dbContext)
+        public ValuesController(IService<PaymentOrder> paymentOrderService, IService<PaymentTransactionLog> paymentTransactionLogService, ISageService sageService, IDbContext dbContext)
         {
             _dbContext = dbContext;
             _paymentOrderService = paymentOrderService;
             _paymentTransactionLogService = paymentTransactionLogService;
+            _sageService = sageService;
         }
 
         #endregion
 
-        private const string StrTransactionType = "PAYMENT";
+        private const string transactionType = "PAYMENT";
 
         /// <summary>
         /// If application is registered (filter attribute) generate a token and return it to the calling app.
@@ -70,14 +73,14 @@ namespace PaymentGateway.Controllers
         [ValidTokenApiFilter]
         public string RequestVendorTxCode(int id)
         {
-            var vendorTxCode =  SageConfig.GenerateVendorTxCode();
-            
+            var vendorTxCode =  _sageService.GenerateVendorTxCode();
+
             return vendorTxCode;
         }
 
         /// <summary>
         /// Generate SagePay payment request.
-        /// Requires:: Valid Token & VendorTxCode attached to the Request HEADER 
+        /// Requires:: Valid Token & VendorTxCode attached to the Request HEADER
         /// </summary>
         /// <returns></returns>
         [HttpGet]
@@ -88,8 +91,14 @@ namespace PaymentGateway.Controllers
             var contains = headers.Any(h => h.Key.Contains("X-PaymentInfo"));
 
             if (!contains)
-                return new Dictionary<string, object>();
+            {
+                var dict = new Dictionary<string, object>
+                {
+                    {"Status", "Error"}, {"StatusDetail", "Payment Details Missing"}
+                };
 
+                return dict;
+            }
 
             var headerValues = Request.Headers.GetValues("X-PaymentInfo");
             var jsonInfo = headerValues.FirstOrDefault();
@@ -128,10 +137,63 @@ namespace PaymentGateway.Controllers
             var costCentre = paymentInfo.CostCentre;
             var projectCode = paymentInfo.ProjectCode;
 
-            return SendPaymentRequest(vendorTxCode, totalBookingFee, accountCode, bookingId, 
-                costCentre, projectCode, notificationUrl, billingDetails, deliveryDetails,
+            var strPost = PaymentHelper.BuildPaymentRequest(transactionType, vendorTxCode, totalBookingFee,
+                accountCode, bookingId, costCentre, projectCode, notificationUrl, billingDetails, deliveryDetails,
                 customerEmail, basket, isMobile);
 
+            var connectTo = SageConfig.StrConnectTo;
+
+            var response = _sageService.SendRequest(strPost, "purchase", connectTo);
+
+            //var sageResponseDict = PrepareNextUrl(vendorTxCode, totalBookingFee, accountCode, bookingId, costCentre, projectCode, ref response);
+            var sageResponseDict = _sageService.PrepareNextUrl(false, ref response);
+
+            var success = Convert.ToBoolean(sageResponseDict["success"].ToString());
+
+            if (success)
+            {
+                
+                var status = sageResponseDict["Status"].ToString();
+                var statusDetail = sageResponseDict["StatusDetail"].ToString();
+                var vPsTxID = sageResponseDict["VPSTxId"].ToString();
+
+
+                // Insert Payment Order Log
+                var paymentOrder = new PaymentOrder()
+                {
+                    Amount = Convert.ToDouble(totalBookingFee),
+                    AccountCode = accountCode,
+                    BookingId = bookingId,
+                    CostCentre = costCentre,
+                    ProcessedDate = DateTime.Now,
+                    ProjectCode = projectCode,
+                    Status = status,
+                    StatusDetail = statusDetail,
+                    VendorTxCode = vendorTxCode,
+                    VPSTxID = vPsTxID
+                };
+
+                _paymentOrderService.Add(paymentOrder);
+
+                // Create TransactionLog entry
+                var transactionLog = new PaymentTransactionLog()
+                {
+                    VendorTxCode = vendorTxCode,
+                    Amount = Convert.ToDecimal(totalBookingFee),
+                    VPSTxID = vPsTxID,
+                    RegistrationStatus = status,
+                    RegistrationStatusDetail = statusDetail,
+                    RegistrationTime = DateTime.Now
+                };
+
+                _paymentTransactionLogService.Add(transactionLog);
+
+                // commit changes to database
+                _dbContext.SaveChanges();
+
+            }
+
+            return sageResponseDict;
         }
 
         [HttpGet]
@@ -140,7 +202,7 @@ namespace PaymentGateway.Controllers
         {
             var dict = new Dictionary<string, string>();
             var notificationStatus = Empty;
-            var notificationRedirectURL = Empty;
+            var notificationRedirectUrl = Empty;
             var notificationStatusDetail = Empty;
 
             var headers = Request.Headers;
@@ -150,7 +212,7 @@ namespace PaymentGateway.Controllers
             {
                 notificationStatus = "INVALID";
                 notificationStatusDetail = "Parameters were not included in the request.";
-                
+
                 dict.Add("Status", notificationStatus);
                 dict.Add("StatusDetail", notificationStatusDetail);
 
@@ -166,8 +228,9 @@ namespace PaymentGateway.Controllers
 
             var transactionLogs = _paymentTransactionLogService.GetAll();
 
+            // get the transaction log for the vendor code and transaction id.
             var selectedTransactionLog = (from l in transactionLogs
-                where l.VendorTxCode == postedTransactionLog.VendorTxCode 
+                where l.VendorTxCode == postedTransactionLog.VendorTxCode
                       && l.VPSTxID == postedTransactionLog.VPSTxID
                 select l).FirstOrDefault();
 
@@ -184,12 +247,16 @@ namespace PaymentGateway.Controllers
             }
             else
             {
-                selectedTransactionLog.AuthorisationStatus = "DUD";
-                selectedTransactionLog.AuthorisationStatusDetail = "NOT FOUND";
-                selectedTransactionLog.AuthorisationTime = DateTime.Now;                
-                selectedTransactionLog.SecurityKey = "Dummy";
-                selectedTransactionLog.CardType = "CARD";
-                selectedTransactionLog.LastFourDigits = "0000";
+                selectedTransactionLog = new PaymentTransactionLog
+                {
+                    AuthorisationStatus = "DUD",
+                    AuthorisationStatusDetail = "NOT FOUND",
+                    AuthorisationTime = DateTime.Now,
+                    SecurityKey = "Dummy",
+                    CardType = "CARD",
+                    LastFourDigits = "0000"
+                };
+
 
                 _dbContext.Entry(selectedTransactionLog).State = EntityState.Modified;
             }
@@ -197,122 +264,41 @@ namespace PaymentGateway.Controllers
             _dbContext.SaveChanges();
 
 
-            dict = new Dictionary<string, string>();
-            dict.Add("Status", notificationStatus);
-            dict.Add("StatusDetail", notificationStatusDetail);
+            dict = new Dictionary<string, string>
+            {
+                {"Status", notificationStatus}, {"StatusDetail", notificationStatusDetail}
+            };
 
             return dict;
         }
 
-        private Dictionary<string, object> SendPaymentRequest(string strVendorTxCode,
-                string totalBookingFee,
-                string accountCode,
-                int bookingId,
-                string costCentre,
-                string projectCode,
-                string notificationUrl,
-                string billingDetails,
-                string deliveryDetails,
-                string customerEmail,
-                string basket,
-                bool isMobile)
+        private Dictionary<string, object> PrepareNextUrl(ref string response)
         {
-            //** Create the Server POST **
-            //** For more details see the Server Protocol 2.23 **
-            //** NB: Fields potentially containing non ASCII characters are URLEncoded when included in the POST **
-            var strPost = "VPSProtocol=" + SageConfig.StrProtocol;
-
-            //** PAYMENT by default. You can change this in the includes file **
-            strPost = strPost + "&TxType=" + StrTransactionType;
-
-            strPost = strPost + "&Vendor=" + SageConfig.StrVendorName;
-
-            //** As generated above **
-            strPost = strPost + "&VendorTxCode=" + strVendorTxCode;
-
-            //** Optional: If you are a Sage Pay Partner and wish to flag the transactions with your unique partner id, 
-            //it should be passed here
-            if (SageConfig.StrPartnerID.Length > 0)
-            {
-                // ** You can change this in the includes file **
-                // URLEncode(strPartnerID);
-                strPost = strPost + "&ReferrerID=" + System.Web.HttpUtility.UrlEncode(SageConfig.StrPartnerID,
-                              System.Text.Encoding.GetEncoding("ISO-8859-15"));
-            }
-
-            //** Formatted to 2 decimal places with leading digit but no commas or currency symbols **
-            strPost = strPost + "&Amount=" + totalBookingFee;
-
-            strPost = strPost + "&Currency=" + SageConfig.StrCurrency;
-
-            //** Up to 100 chars of free format description **
-            strPost = strPost + "&Description=" + System.Web.HttpUtility.UrlEncode(
-                          "Services from NHS Education for Scotland",
-                          System.Text.Encoding.GetEncoding("ISO-8859-15"));
-
-            //** The Notification URL is the page to which Server calls back when a transaction completes **
-            //** You can change this for each transaction, perhaps passing a session ID or state flag if you wish **
-            strPost = strPost + "&NotificationUrl=" + notificationUrl;
-
-            //** Billing Details **                    
-            strPost = strPost + billingDetails;
-
-            //** Delivery Details **
-            strPost = strPost + deliveryDetails;
-
-            strPost = strPost + "&CustomerEMail=" + customerEmail;
-            strPost = strPost + "&Basket=" + basket;
-
-            //** For charities registered for Gift Aid, set to 1 to display the Gift Aid check box on the payment pages **
-            strPost = strPost + "&AllowGiftAid=0";
-
-            //** Allow fine control over AVS/CV2 checks and rules by changing this value. 0 is Default **
-            //** It can be changed dynamically, per transaction, if you wish. See the Server Protocol document **
-            strPost = strPost + "&ApplyAVSCV2=0";
-
-            //** Allow fine control over 3D-Secure checks and rules by changing this value. 0 is Default **
-            //** It can be changed dynamically, per transaction, if you wish. See the Server Protocol document **
-            strPost = strPost + "&Apply3DSecure=0";
-
-            var profile = isMobile ? "&Profile=LOW" : "&Profile=NORMAL"; //If Mobile device set Profile to Low
-            strPost = strPost + profile;
-
-
-            var response = SageConfig.SendRequest(strPost, "purchase");
-
-            return PrepareNextUrl(strVendorTxCode, totalBookingFee, accountCode, bookingId, costCentre, projectCode, ref response);
-        }
-
-
-        private Dictionary<string, object> PrepareNextUrl(string vendorTxCode, 
-            string amount, 
-            string accountCode, 
-            int bookingId, string costCentre, string projectCode, ref string strResponse)
-        {
-            strResponse = strResponse.Replace("\r\n", ";'").Replace("'", "");
+            response = response.Replace("\r\n", ";'").Replace("'", "");
             var arr = new string[8];
-            arr = strResponse.Split(';');
-            var ht = new Dictionary<string, object>();
+            arr = response.Split(';');
+            var sageResponseDict = new Dictionary<string, object>();
 
             var vpsTxId = Empty;
             var statusDetail = Empty;
             var securityKey = Empty;
             var status = Empty;
 
-            ht.Add("success", true);
-            for (int k = 0; k <= arr.Length - 1; k++)
+            sageResponseDict.Add("success", true);
+
+            for (var k = 0; k <= arr.Length - 1; k++)
             {
-                string[] subArr = arr[k].Split('=');
+                var subArr = arr[k].Split('=');
 
                 if (subArr[0] == "VPSTxId")
                 {
-                    ht.Add(subArr[0], subArr[1]);
+                    sageResponseDict.Add(subArr[0], subArr[1]);
                     vpsTxId = subArr[1];
                 }
 
                 if (subArr[0] == "SecurityKey")
                 {
-                    ht.Add(subArr[0], subArr[1]);
+                    sageResponseDict.Add(subArr[0], subArr[1]);
                     securityKey = subArr[1];
                 }
 
@@ -324,71 +310,71 @@ namespace PaymentGateway.Controllers
                     if (sagePayBypassEnabled)
                     {
                         Object obj = (Object) (subArr[1] + "=False");
-                        ht.Add(subArr[0], obj);
+                        sageResponseDict.Add(subArr[0], obj);
                     }
                     else
                     {
                         Object obj = (Object) (subArr[1] + "=" + vpsTxId);
-                        ht.Add(subArr[0], obj);
+                        sageResponseDict.Add(subArr[0], obj);
                     }
                 }
 
                 if (subArr[0] == "StatusDetail")
                 {
-                    ht.Add(subArr[0], subArr[1]);
+                    sageResponseDict.Add(subArr[0], subArr[1]);
                     statusDetail = subArr[1];
                 }
 
                 if (subArr[0] == "Status")
                 {
-                    ht.Add(subArr[0], subArr[1]);
+                    sageResponseDict.Add(subArr[0], subArr[1]);
                     status = subArr[1];
                 }
             }
 
 
-            // INSERT PAYMENT ORDER LOG (SERVICE)
-            var paymentOrder = new PaymentOrder()
-            {
-                Amount = Convert.ToDouble(amount),
-                AccountCode = accountCode,
-                BookingId = bookingId,
-                CostCentre = costCentre,
-                ProcessedDate = DateTime.Now,
-                ProjectCode = projectCode,
-                Status = status,
-                StatusDetail = statusDetail,
-                VendorTxCode = vendorTxCode,
-                VPSTxID = vpsTxId
-            };
+            //// INSERT PAYMENT ORDER LOG (SERVICE)
+            //var paymentOrder = new PaymentOrder()
+            //{
+            //    Amount = Convert.ToDouble(amount),
+            //    AccountCode = accountCode,
+            //    BookingId = bookingId,
+            //    CostCentre = costCentre,
+            //    ProcessedDate = DateTime.Now,
+            //    ProjectCode = projectCode,
+            //    Status = status,
+            //    StatusDetail = statusDetail,
+            //    VendorTxCode = vendorTxCode,
+            //    VPSTxID = vpsTxId
+            //};
 
-            _paymentOrderService.Add(paymentOrder);
+            //_paymentOrderService.Add(paymentOrder);
 
-            // Create TransactionLog entry
-            var transactionLog = new PaymentTransactionLog()
-            {
-                VendorTxCode = vendorTxCode,
-                Amount = Convert.ToDecimal(amount),
-                VPSTxID = vpsTxId,
-                RegistrationStatus = status,
-                RegistrationStatusDetail = statusDetail,
-                RegistrationTime = DateTime.Now
-            };
+            //// Create TransactionLog entry
+            //var transactionLog = new PaymentTransactionLog()
+            //{
+            //    VendorTxCode = vendorTxCode,
+            //    Amount = Convert.ToDecimal(amount),
+            //    VPSTxID = vpsTxId,
+            //    RegistrationStatus = status,
+            //    RegistrationStatusDetail = statusDetail,
+            //    RegistrationTime = DateTime.Now
+            //};
 
-            _paymentTransactionLogService.Add(transactionLog);
+            //_paymentTransactionLogService.Add(transactionLog);
 
-            _dbContext.SaveChanges();
+            //_dbContext.SaveChanges();
 
-            //if registration is not successful redirect the url to error page            
+            //if registration is not successful redirect the url to error page
+
             if (!status.Equals("OK"))
             {
-                ht.Clear();
-                ht.Add("success", false);
-                ht.Add("msg", statusDetail);
+                sageResponseDict.Clear();
+                sageResponseDict.Add("success", false);
+                sageResponseDict.Add("msg", statusDetail);
             }
 
-            return ht;
-
+            return sageResponseDict;
         }
 
     }
