@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Configuration;
 using System.Web;
-using Ninject.Activation;
 
 namespace PaymentGateway.Util.Helpers
 {
@@ -9,6 +8,7 @@ namespace PaymentGateway.Util.Helpers
     {
         #region properties
 
+        public static string RootUrl => GetValue("RootUrl");
         public static string NotificationUrl => GetValue("NotificationUrl");
         public static string SageEnvironment => GetValue("SageEnvironment");
         public static string PackageVersion => GetValue("Package.Version");

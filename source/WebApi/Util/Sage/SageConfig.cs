@@ -56,7 +56,7 @@ namespace PaymentGateway.Util.Sage
         //**************************************************************************************************
         // Global Definitions for this site
         //**************************************************************************************************
-        public const String StrProtocol = "2.23";
+        public const String StrProtocol = "3.00";
 
 
         //******************************************** END- SAGEPAY CONFIGURATION SETTING ************************
@@ -205,35 +205,35 @@ namespace PaymentGateway.Util.Sage
 
         #region Send Request to Sage
 
-        public static string SendRequest(string PostQuery, string TransactionTypeForURL)
-        {
-            UTF8Encoding objUtfEncode = new UTF8Encoding();
-            byte[] arrRequest = null;
-            Stream objStreamReq = default(Stream);
-            HttpWebRequest objHttpRequest = default(HttpWebRequest);
-            StreamReader objStreamRes = default(StreamReader);
-            HttpWebResponse objHttpResponse = default(HttpWebResponse);
-            Uri objUri = new Uri(SystemUrl(StrConnectTo.ToUpper(), TransactionTypeForURL.ToLower()));
+        //public static string SendRequest(string PostQuery, string TransactionTypeForURL)
+        //{
+        //    UTF8Encoding objUtfEncode = new UTF8Encoding();
+        //    byte[] arrRequest = null;
+        //    Stream objStreamReq = default(Stream);
+        //    HttpWebRequest objHttpRequest = default(HttpWebRequest);
+        //    StreamReader objStreamRes = default(StreamReader);
+        //    HttpWebResponse objHttpResponse = default(HttpWebResponse);
+        //    Uri objUri = new Uri(SystemUrl(StrConnectTo.ToUpper(), TransactionTypeForURL.ToLower()));
 
-            objHttpRequest = (HttpWebRequest)WebRequest.Create(objUri);
-            objHttpRequest.KeepAlive = false;
-            objHttpRequest.Method = "POST";
+        //    objHttpRequest = (HttpWebRequest)WebRequest.Create(objUri);
+        //    objHttpRequest.KeepAlive = false;
+        //    objHttpRequest.Method = "POST";
 
-            objHttpRequest.ContentType = "application/x-www-form-urlencoded";
+        //    objHttpRequest.ContentType = "application/x-www-form-urlencoded";
 
-            arrRequest = objUtfEncode.GetBytes(PostQuery);
-            objHttpRequest.ContentLength = arrRequest.Length;
-            objStreamReq = objHttpRequest.GetRequestStream();
-            objStreamReq.Write(arrRequest, 0, arrRequest.Length);
-            objStreamReq.Close();
+        //    arrRequest = objUtfEncode.GetBytes(PostQuery);
+        //    objHttpRequest.ContentLength = arrRequest.Length;
+        //    objStreamReq = objHttpRequest.GetRequestStream();
+        //    objStreamReq.Write(arrRequest, 0, arrRequest.Length);
+        //    objStreamReq.Close();
 
-            objHttpResponse = (HttpWebResponse)objHttpRequest.GetResponse();
-            objStreamRes = new StreamReader(objHttpResponse.GetResponseStream(), Encoding.ASCII);
-            string response = objStreamRes.ReadToEnd();
-            objStreamRes.Close();
+        //    objHttpResponse = (HttpWebResponse)objHttpRequest.GetResponse();
+        //    objStreamRes = new StreamReader(objHttpResponse.GetResponseStream(), Encoding.ASCII);
+        //    string response = objStreamRes.ReadToEnd();
+        //    objStreamRes.Close();
 
-            return response;        
-        }
+        //    return response;        
+        //}
 
         #endregion
     }

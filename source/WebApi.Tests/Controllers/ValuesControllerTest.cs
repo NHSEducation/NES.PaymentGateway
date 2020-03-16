@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Hosting;
@@ -173,6 +175,7 @@ namespace WebApi.Tests.Controllers
             // Assert
             Assert.Equal(responseDict, result);
         }
+
         #endregion
 
         #region private methods
@@ -194,7 +197,9 @@ namespace WebApi.Tests.Controllers
         {
             var controller = new ValuesController(_paymentOrderService, _paymentTransactionLogService, _sageService, _dbContext);
             var config = new HttpConfiguration();
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://local.paymentgateway.scot.nhs.uk/Values");
+            var valuesPath = ConfigurationHelper.RootUrl + "/values";
+            //var request = new HttpRequestMessage(HttpMethod.Post, "http://local.paymentgateway.scot.nhs.uk/Values");
+            var request = new HttpRequestMessage(HttpMethod.Post, valuesPath);
             var route = config.Routes.MapHttpRoute("DefaultApi", "api/{controller}/{action}/{id}", new { id = RouteParameter.Optional });
             var routeData = new HttpRouteData(route, new HttpRouteValueDictionary { { "id", "1" }, { "controller", "" } });
 

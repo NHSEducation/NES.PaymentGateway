@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Globalization;
 using System.Linq;
-using System.Web.Http;
+using System.Web.Mvc;
 using Common.Helpers;
 using Newtonsoft.Json;
 using PaymentGateway.ControllerHelper;
@@ -272,6 +272,17 @@ namespace PaymentGateway.Controllers
             return dict;
         }
 
+        [HttpGet]
+        [ValidTokenApiFilter]
+        public bool CheckOrderExists()
+        {
+            var returnValue = false;
+
+            return returnValue;
+        }
+
+        #region NOT USED
+
         private Dictionary<string, object> PrepareNextUrl(ref string response)
         {
             response = response.Replace("\r\n", ";'").Replace("'", "");
@@ -377,5 +388,6 @@ namespace PaymentGateway.Controllers
             return sageResponseDict;
         }
 
+        #endregion
     }
 }

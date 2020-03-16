@@ -29,4 +29,23 @@ namespace Common
         REFUND,
         REJECTED
     }
+
+    public enum PaymentReturnCode
+    {
+        BookingError,
+        WaitingList,
+        BookingConfirm,
+        PaymentErrorNoParameters,
+        PaymentErrorTransactionNotFound,
+        PaymentErrorKeyMismatch,
+        PaymentSuccess,
+        PaymentMobileSuccess,
+        PaymentSuccessMessageNotSent,
+        PaymentSuccessNotAuthed,
+        PaymentSuccessAbort,
+        PaymentSuccessRejected,
+        PaymentSuccessError,
+        PaymentErrorTransactionUpdateError,
+        PaymentErrorNotAuthenticated
+    }
 }

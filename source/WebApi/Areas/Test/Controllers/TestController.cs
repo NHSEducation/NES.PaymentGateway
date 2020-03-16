@@ -32,6 +32,47 @@ namespace PaymentGateway.Areas.Test.Controllers
             return View();
         }
 
+        //public ViewResult PaymentNotification(bool isMobile)
+        //{
+        //    //PaymentHelper.LogToFile("Info", "------------------------------------------------------------");
+        //    //PaymentHelper.LogToFile("Info", "iBooklet/PaymentNotification()");
+
+        //    var sagePayBypassEnabled = System.Web.Configuration.WebConfigurationManager.AppSettings["SagePayBypassEnabled"] == "True";
+
+        //    if (sagePayBypassEnabled)
+        //    {
+        //        //Guid userID = (Guid)Session[SessionObjects.ProviderUserKey.ToString()];
+
+        //        var collection = Request.Form;
+        //        var propInfo = collection.GetType().GetProperty("IsReadOnly", BindingFlags.Instance | BindingFlags.NonPublic);
+        //        propInfo.SetValue(collection, false, new object[] { });
+
+        //        var vPSTxId = Session["vPSTxId"].ToString();
+        //        var strVendorTxCode = Session["VendorTxCode"].ToString();
+
+        //        collection.Add("VendorTxCode", strVendorTxCode);
+        //        collection.Add("Status", "OK");
+        //        collection.Add("VPSTxId", vPSTxId);
+        //        collection.Add("VPSSignature", "");
+        //    }
+        //    //detect if isMobile
+        //    //bool isMobile = BrowserAndDeviceDetection.IsMobile(this) ? true : false;            
+
+        //    //return View("PaymentSuccess");
+        //    Dictionary<string, string> dict = PaymentHelper.PaymentNotification(Request, isMobile);
+
+        //    dict["Status"] = this.TruncateString(dict["Status"], 14);
+        //    dict["StatusDetail"] = this.TruncateString(dict["StatusDetail"], 251);
+        //    dict["RedirectURL"] = dict["RedirectURL"];
+
+        //    //PaymentHelper.LogToFile("Info", "Status:: " + dict["Status"]);
+        //    //PaymentHelper.LogToFile("Info", "StatusDetail:: " + dict["StatusDetail"]);
+        //    //PaymentHelper.LogToFile("Info", "RedirectURL:: " + dict["RedirectURL"]);
+
+
+        //    return View("PaymentNotification", dict);
+        //}
+
         public ActionResult RequestVendorTxCode(bool wait)
         {
             var client = new WebClient();
