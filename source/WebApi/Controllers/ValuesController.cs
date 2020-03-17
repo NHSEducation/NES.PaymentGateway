@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Globalization;
 using System.Linq;
-using System.Web.Mvc;
+using System.Web.Http;
 using Common.Helpers;
 using Newtonsoft.Json;
 using PaymentGateway.ControllerHelper;
